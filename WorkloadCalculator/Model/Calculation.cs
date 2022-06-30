@@ -9,6 +9,11 @@ namespace WorkloadCalculator.Model
     public class Calculation
     {
         /// <summary>
+        /// Internal Object Id
+        /// </summary>
+        public long Id { get; set; }
+
+        /// <summary>
         /// Student learning Start Date
         /// </summary>
         public DateTime StartDate { get; set; }

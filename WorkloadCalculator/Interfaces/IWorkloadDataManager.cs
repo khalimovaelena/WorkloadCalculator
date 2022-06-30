@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using WorkloadCalculator.Model;
+﻿using WorkloadCalculator.Model;
 
 namespace WorkloadCalculator.Interfaces
 {
@@ -9,6 +7,12 @@ namespace WorkloadCalculator.Interfaces
     /// </summary>
     public interface IWorkloadDataManager
     {
+        /// <summary>
+        /// Save collection with courses to database
+        /// </summary>
+        /// <param name="courses"></param>
+        void FillCourses(ICollection<Course> courses);
+
         /// <summary>
         /// Gets all courses from the DataBase
         /// </summary>

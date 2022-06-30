@@ -10,7 +10,7 @@ namespace WorkloadCalculator.Model
         /// <summary>
         /// Course Internal Id
         /// </summary>
-        public long ID { get; }
+        public long ID { get; set; }
 
         /// <summary>
         /// Course Name
