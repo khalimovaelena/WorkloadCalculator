@@ -55,8 +55,8 @@ namespace WorkloadCalculator
 
                     _logger.LogInformation($"Now please enter DATE when you want to START these courses in format DD/MM/YYYY:");
 
-                    string startDate = Console.ReadLine();//TODO: check date not in the past
-                    if (startDate == null || !regExp.IsMatch(startDate))
+                    string startDateStr = Console.ReadLine();//TODO: check date not in the past
+                    if (startDateStr == null || !regExp.IsMatch(startDateStr))
                     {
                         _logger.LogWarning($"Sorry! Wrong date format");
                     }
@@ -64,8 +64,8 @@ namespace WorkloadCalculator
                     {
                         _logger.LogInformation($"Thank you! Now please enter DATE when you want to FINISH these courses in format DD/MM/YYYY:");
 
-                        string endDate = Console.ReadLine();//TODO: check date more than startDate
-                        if (endDate == null || !regExp.IsMatch(endDate))
+                        string endDateStr = Console.ReadLine();//TODO: check date more than startDateStr
+                        if (endDateStr == null || !regExp.IsMatch(endDateStr))
                         {
                             _logger.LogWarning($"Sorry! Wrong date format");
                         }
@@ -80,7 +80,12 @@ namespace WorkloadCalculator
                             }
                             else
                             {
-                                _logger.LogInformation(_controller.Calculate()?.HoursPerWeek.ToString());
+                                var selectedCourses = courses.Where(c => numbers.Contains(c.ID)).ToList();
+                                var startDate = Convert.ToDateTime(startDateStr);
+                                var endDate = Convert.ToDateTime(endDateStr);
+                                var calculation = _controller.Calculate(selectedCourses, startDate, endDate);
+                                _logger.LogInformation("Calculated values:");
+                                _logger.LogInformation($"ResultHours={calculation?.ResultHours}, HoursPerWeek={calculation?.HoursPerWeek}, WorkingHours={calculation?.HoursPerWorkWeek}");
                             }
                         }
                     }

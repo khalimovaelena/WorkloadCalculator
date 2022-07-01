@@ -26,9 +26,32 @@ namespace WorkloadCalculator.Controllers
 
         [HttpPost]
         [Route("calculate")]
-        public Calculation Calculate()
+        public Calculation Calculate(ICollection<Course> selectedCourses, DateTime startDate, DateTime endDate)
         {
-            return new Calculation();//TODO
+            var calculation = new Calculation();
+
+            if (startDate < DateTime.Today)
+            {
+                _logger.LogWarning($"Sorry! Start date can't be in the past. Calculation is cancelled.");
+            }
+            else if (endDate < DateTime.Today)
+            {
+                _logger.LogWarning($"Sorry! End date can't be in the past. Calculation is cancelled.");
+            }
+            else if (startDate > endDate)
+            {
+                _logger.LogWarning($"Sorry! Start date can't be greater than End date. Calculation is cancelled.");
+            }
+            else
+            {
+                calculation.StartDate = startDate;
+                calculation.EndDate = endDate;
+                calculation.ResultHours = selectedCourses.Sum(c => c.Hours);
+                //TODO: calculate with dates
+                //TODO save calculation to database
+            }
+
+            return calculation;
         }
     }
 }
