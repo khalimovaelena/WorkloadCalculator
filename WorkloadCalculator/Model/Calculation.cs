@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace WorkloadCalculator.Model
 {
     /// <summary>
-    /// Object to store Workload Calculation
+    /// Object to store Workload Calculate
     /// </summary>
     public class Calculation
     {
@@ -29,14 +29,9 @@ namespace WorkloadCalculator.Model
         public long ResultHours { get; set; }
 
         /// <summary>
-        /// Sum of hours in a work week (Mon-Fri) that is needed to finish all selected courses
-        /// </summary>
-        public long HoursPerWorkWeek { get; set; }
-
-        /// <summary>
         /// Sum of hours in a whole week (Mon-Sun) that is needed to finish all selected courses
         /// </summary>
-        public long HoursPerWeek { get; set; }
+        public double HoursPerWeek { get; set; }
 
         /// <summary>
         /// Enumeration of Selected Courses

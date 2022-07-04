@@ -1,5 +1,4 @@
-﻿using System;
-using WorkloadCalculator.Interfaces;
+﻿using WorkloadCalculator.Interfaces;
 using WorkloadCalculator.Model;
 using System.Data.SQLite;
 using System.Configuration;
@@ -8,12 +7,18 @@ using System.Data;
 
 namespace WorkloadCalculator.Persistence
 {
+    /// <inheritdoc />
     public class InMemoryWorkloadDataManager : IWorkloadDataManager, IDisposable
     {
         private string _connectionStringName = "workload_db";
         private SQLiteConnection _sqlConnection;
         private ILogger _logger;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="logger">Logger</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public InMemoryWorkloadDataManager(ILogger logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -36,13 +41,13 @@ namespace WorkloadCalculator.Persistence
                     cmd.ExecuteNonQuery();
                 }
 
-                var sqlTableCalculation = "create table calculation (id int primary key, startdate int, enddate int, resulthours int, hoursperworkweek int, hoursperweek int)";
+                var sqlTableCalculation = "create table calculation (id integer primary key autoincrement, startdate text, enddate text, resulthours int, hoursperweek int)";
                 using (SQLiteCommand cmd = new SQLiteCommand(sqlTableCalculation, _sqlConnection))
                 {
                     cmd.ExecuteNonQuery();
                 }
 
-                var sqlTableSelectedCourses = "create table selectedcourses (id int primary key, workloadid int, courseid int)";
+                var sqlTableSelectedCourses = "create table selectedcourses (id integer primary key autoincrement, workloadid int, courseid int, UNIQUE(workloadid, courseid))";
                 using (SQLiteCommand cmd = new SQLiteCommand(sqlTableSelectedCourses, _sqlConnection))
                 {
                     cmd.ExecuteNonQuery();
@@ -56,6 +61,10 @@ namespace WorkloadCalculator.Persistence
             {
                 _logger.LogError($"There is an error during connecting to the database:{ex.Message}", ex);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError($"There is an error:{ex.Message}", ex);
+            }
         }
 
         private void InitialFilling()
@@ -66,7 +75,7 @@ namespace WorkloadCalculator.Persistence
                 ID = 1,
                 Name = "Blockchain and HR",
                 Hours = 8
-            }) ;
+            });
             initialCourses.Add(new Course()
             {
                 ID = 2,
@@ -203,6 +212,7 @@ namespace WorkloadCalculator.Persistence
             FillCourses(initialCourses);
         }
 
+        /// <inheritdoc />
         public void FillCourses(ICollection<Course> courses)
         {
             try
@@ -236,11 +246,72 @@ namespace WorkloadCalculator.Persistence
             }
         }
 
+        /// <inheritdoc />
         public ICollection<Calculation> CalculationHistory()
         {
-            throw new NotImplementedException();
+            var calculationHistory = new List<Calculation>();
+            try
+            {
+                using (SQLiteCommand selectCmd = _sqlConnection.CreateCommand())
+                {
+                    selectCmd.CommandText = @"SELECT calc.id as calc_id, date(calc.startdate,'unixepoch') as startdate, date(calc.enddate,'unixepoch') as enddate, calc.resulthours, calc.hoursperweek, c.id as course_id, c.name, c.hours FROM calculation calc INNER JOIN selectedcourses sc on sc.workloadid = calc.id INNER JOIN course c ON c.id = sc.courseid ";
+                    selectCmd.CommandType = CommandType.Text;
+                    SQLiteDataReader r = selectCmd.ExecuteReader();
+                    while (r.Read())
+                    {
+                        var calcId = Convert.ToInt32(r["calc_id"]);
+                        if (!calculationHistory.Any(calc => calc.Id == calcId))
+                        {
+                            calculationHistory.Add(new Calculation()
+                            {
+                                Id = calcId,
+                                StartDate = Convert.ToDateTime(r["startdate"]),
+                                EndDate = Convert.ToDateTime(r["enddate"]),
+                                ResultHours = Convert.ToInt64(r["resulthours"]),
+                                HoursPerWeek = Convert.ToDouble(r["hoursperweek"]),
+                                SelectedCourses = new List<Course>
+                                {
+                                    new Course()
+                                    {
+                                        ID = Convert.ToInt32(r["course_id"]),
+                                        Name = Convert.ToString(r["name"]),
+                                        Hours = Convert.ToInt32(r["hours"]),
+                                    }
+                                },
+                            });
+                        }
+                        else
+                        {
+                            calculationHistory.Where(calc => calc.Id == calcId)
+                                .First()
+                                .SelectedCourses.Add(
+                                new Course()
+                                {
+                                    ID = Convert.ToInt32(r["course_id"]),
+                                    Name = Convert.ToString(r["name"]),
+                                    Hours = Convert.ToInt32(r["hours"]),
+                                });
+                        }
+                    }
+                }
+            }
+            catch (SQLiteException ex)
+            {
+                _logger.LogError($"There is an ERROR during executing SELECT query:{ex.Message}", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError($"There is an error during connecting to the database:{ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"There is an error:{ex.Message}", ex);
+            }
+
+            return calculationHistory;
         }
 
+        /// <inheritdoc />
         public ICollection<Course> GetAllCourses()
         {
             var courses = new List<Course>();
@@ -253,8 +324,8 @@ namespace WorkloadCalculator.Persistence
                     SQLiteDataReader r = selectCmd.ExecuteReader();
                     while (r.Read())
                     {
-                        courses.Add(new Course() 
-                        { 
+                        courses.Add(new Course()
+                        {
                             ID = Convert.ToInt32(r["id"]),
                             Name = Convert.ToString(r["name"]),
                             Hours = Convert.ToInt32(r["hours"]),
@@ -273,11 +344,59 @@ namespace WorkloadCalculator.Persistence
             return courses;
         }
 
+        /// <inheritdoc />
         public void SaveCalculation(Calculation calculation)
         {
-            throw new NotImplementedException();
+            try
+            {
+                using (SQLiteCommand insertSQL = new SQLiteCommand("INSERT INTO calculation (startdate, enddate, resulthours, hoursperweek) VALUES (datetime(@Startdate), datetime(@Enddate), @Resulthours, @Hoursperweek)", _sqlConnection))
+                {
+
+                    insertSQL.CommandType = CommandType.Text;
+                    insertSQL.Parameters.AddWithValue("Startdate", calculation.StartDate);
+                    insertSQL.Parameters.AddWithValue("Enddate", calculation.EndDate);
+                    insertSQL.Parameters.AddWithValue("Resulthours", calculation.ResultHours);
+                    insertSQL.Parameters.AddWithValue("Hoursperweek", calculation.HoursPerWeek);
+                    try
+                    {
+                        insertSQL.ExecuteNonQuery();
+                        var workloadId = _sqlConnection.LastInsertRowId;
+
+                        using (SQLiteCommand insertSelectedCoursesSQL = new SQLiteCommand("INSERT INTO selectedcourses (workloadid, courseid) VALUES (@Workload, @Course)", _sqlConnection))
+                        {
+                            foreach (Course course in calculation.SelectedCourses)
+                            {
+                                insertSelectedCoursesSQL.CommandType = CommandType.Text;
+                                insertSelectedCoursesSQL.Parameters.AddWithValue("Workload", workloadId);
+                                insertSelectedCoursesSQL.Parameters.AddWithValue("Course", course.ID);
+                                try
+                                {
+                                    insertSelectedCoursesSQL.ExecuteNonQuery();
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError($"There is an ERROR during executing INSERT query:{ex.Message}", ex);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"There is an ERROR during executing INSERT query:{ex.Message}", ex);
+                    }
+                }
+            }
+            catch (SQLiteException ex)
+            {
+                _logger.LogError($"There is an ERROR during executing INSERT query:{ex.Message}", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError($"There is an error during connecting to the database:{ex.Message}", ex);
+            }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _sqlConnection.Close();

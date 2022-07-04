@@ -20,9 +20,9 @@ namespace WorkloadCalculator.Interfaces
         ICollection<Course> GetAllCourses();
 
         /// <summary>
-        /// Save Calculation to the DataBase
+        /// Save Calculate to the DataBase
         /// </summary>
-        /// <param name="calculation">Workload Calculation</param>
+        /// <param name="calculation">Workload Calculate</param>
         void SaveCalculation(Calculation calculation);
 
         /// <summary>

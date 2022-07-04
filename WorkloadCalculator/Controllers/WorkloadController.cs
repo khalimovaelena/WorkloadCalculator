@@ -32,23 +32,28 @@ namespace WorkloadCalculator.Controllers
 
             if (startDate < DateTime.Today)
             {
-                _logger.LogWarning($"Sorry! Start date can't be in the past. Calculation is cancelled.");
+                _logger.LogWarning($"Sorry! Start date can't be in the past. Calculate is cancelled.");
             }
             else if (endDate < DateTime.Today)
             {
-                _logger.LogWarning($"Sorry! End date can't be in the past. Calculation is cancelled.");
+                _logger.LogWarning($"Sorry! End date can't be in the past. Calculate is cancelled.");
             }
             else if (startDate > endDate)
             {
-                _logger.LogWarning($"Sorry! Start date can't be greater than End date. Calculation is cancelled.");
+                _logger.LogWarning($"Sorry! Start date can't be greater than End date. Calculate is cancelled.");
             }
             else
             {
                 calculation.StartDate = startDate;
                 calculation.EndDate = endDate;
                 calculation.ResultHours = selectedCourses.Sum(c => c.Hours);
-                //TODO: calculate with dates
-                //TODO save calculation to database
+                calculation.SelectedCourses = selectedCourses;
+
+                double weeks = (endDate - startDate).Days/7;
+
+                calculation.HoursPerWeek = weeks != 0 ? calculation.ResultHours/weeks : calculation.ResultHours;
+                
+                _dataManager.SaveCalculation(calculation);
             }
 
             return calculation;
