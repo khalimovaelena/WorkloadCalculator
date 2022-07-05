@@ -10,6 +10,11 @@ namespace WorkloadCalculator.Persistence
     /// <inheritdoc />
     public class InMemoryWorkloadDataManager : IWorkloadDataManager, IDisposable
     {
+        /* The simpliest way is to create in-memory database.
+         * For production we can use Oracle, MS SQL and even Elasticsearch and MondoDB. 
+         * We just need to implement IWorkloadDataManager for chosen Data Manager.
+         */
+
         private string _connectionStringName = "workload_db";
         private SQLiteConnection _sqlConnection;
         private ILogger _logger;
@@ -41,7 +46,7 @@ namespace WorkloadCalculator.Persistence
                     cmd.ExecuteNonQuery();
                 }
 
-                var sqlTableCalculation = "create table calculation (id integer primary key autoincrement, startdate text, enddate text, resulthours int, hoursperweek int)";
+                var sqlTableCalculation = "create table calculation (id integer primary key autoincrement, startdate text, enddate text, resulthours int, hoursperweek real)";
                 using (SQLiteCommand cmd = new SQLiteCommand(sqlTableCalculation, _sqlConnection))
                 {
                     cmd.ExecuteNonQuery();
@@ -69,6 +74,11 @@ namespace WorkloadCalculator.Persistence
 
         private void InitialFilling()
         {
+            //The simpliest way is to generate list of courses in the code.
+            //For production we can choose one of the options:
+            //1. Read list of courses from csv or json file
+            //2. Create a web form for user (or admin), where they can insert list of courses
+
             var initialCourses = new List<Course>();
             initialCourses.Add(new Course()
             {
@@ -254,7 +264,7 @@ namespace WorkloadCalculator.Persistence
             {
                 using (SQLiteCommand selectCmd = _sqlConnection.CreateCommand())
                 {
-                    selectCmd.CommandText = @"SELECT calc.id as calc_id, date(calc.startdate,'unixepoch') as startdate, date(calc.enddate,'unixepoch') as enddate, calc.resulthours, calc.hoursperweek, c.id as course_id, c.name, c.hours FROM calculation calc INNER JOIN selectedcourses sc on sc.workloadid = calc.id INNER JOIN course c ON c.id = sc.courseid ";
+                    selectCmd.CommandText = @"SELECT calc.id as calc_id, date(calc.startdate) as startdate, date(calc.enddate) as enddate, calc.resulthours, calc.hoursperweek, c.id as course_id, c.name, c.hours FROM calculation calc INNER JOIN selectedcourses sc on sc.workloadid = calc.id INNER JOIN course c ON c.id = sc.courseid ";
                     selectCmd.CommandType = CommandType.Text;
                     SQLiteDataReader r = selectCmd.ExecuteReader();
                     while (r.Read())
@@ -265,8 +275,8 @@ namespace WorkloadCalculator.Persistence
                             calculationHistory.Add(new Calculation()
                             {
                                 Id = calcId,
-                                StartDate = Convert.ToDateTime(r["startdate"]),
-                                EndDate = Convert.ToDateTime(r["enddate"]),
+                                StartDate = DateTime.Parse(Convert.ToString(r["startdate"])),
+                                EndDate = DateTime.Parse(Convert.ToString(r["enddate"])),
                                 ResultHours = Convert.ToInt64(r["resulthours"]),
                                 HoursPerWeek = Convert.ToDouble(r["hoursperweek"]),
                                 SelectedCourses = new List<Course>
@@ -349,7 +359,7 @@ namespace WorkloadCalculator.Persistence
         {
             try
             {
-                using (SQLiteCommand insertSQL = new SQLiteCommand("INSERT INTO calculation (startdate, enddate, resulthours, hoursperweek) VALUES (datetime(@Startdate), datetime(@Enddate), @Resulthours, @Hoursperweek)", _sqlConnection))
+                using (SQLiteCommand insertSQL = new SQLiteCommand("INSERT INTO calculation (startdate, enddate, resulthours, hoursperweek) VALUES (@Startdate, @Enddate, @Resulthours, @Hoursperweek)", _sqlConnection))
                 {
 
                     insertSQL.CommandType = CommandType.Text;

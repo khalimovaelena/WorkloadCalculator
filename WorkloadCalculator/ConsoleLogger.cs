@@ -4,6 +4,12 @@ namespace WorkloadCalculator
 {
     public class ConsoleLogger<TState> : ILogger
     {
+        /* For the Console Application the best way to log something - 
+         * is using Console.WriteLine.
+         * For other variants of Applications we can implement ILogger and use Serilog or other logging frameworks.
+         */
+
+        /// <inheritdoc />
         public void Log<TState>(TState state, Func<TState, Exception?, string> formatter)
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -11,6 +17,7 @@ namespace WorkloadCalculator
             Console.ResetColor();
         }
 
+        /// <inheritdoc />
         public void Error<TState>(TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -18,6 +25,7 @@ namespace WorkloadCalculator
             Console.ResetColor();
         }
 
+        /// <inheritdoc />
         public void Warn<TState>(TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -25,6 +33,7 @@ namespace WorkloadCalculator
             Console.ResetColor();
         }
 
+        /// <inheritdoc />
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             switch (logLevel)
@@ -45,11 +54,13 @@ namespace WorkloadCalculator
             }
         }
 
+        /// <inheritdoc />
         public bool IsEnabled(LogLevel logLevel)
         {
             return true;
         }
 
+        /// <inheritdoc />
         public IDisposable BeginScope<TState>(TState state)
         {
             throw new NotImplementedException();

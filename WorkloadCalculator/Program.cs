@@ -159,10 +159,10 @@ namespace WorkloadCalculator
         private static void PrintHistory()
         {
             _logger.LogInformation("You have already calculated:");
-            var history = _dataManager.CalculationHistory();
+            var history = _controller.GetHistory();
             foreach(var calculation in history)
             {
-                _logger.LogInformation($"Number:{calculation.Id}, StartDate:{calculation.StartDate}, EndDate:{calculation.EndDate}, TotalHours:{calculation.ResultHours}, HoursPerWeek:{calculation.HoursPerWeek}, Courses:{calculation.SelectedCourses}");
+                _logger.LogInformation($"Number: {calculation.Id}, StartDate: {calculation.StartDate.ToString("dd/MM/yyyy")}, EndDate: {calculation.EndDate.Date.ToString("dd/MM/yyyy")}, TotalHours: {calculation.ResultHours}, HoursPerWeek: {calculation.HoursPerWeek:N2}, Courses: [{String.Join(", ", calculation.SelectedCourses.Select(sc => sc.Name))}]");
             }
         }
     }

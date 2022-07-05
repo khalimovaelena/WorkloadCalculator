@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 25.0.1700.5
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkloadCalculator", "WorkloadCalculator\WorkloadCalculator.csproj", "{515F2BAE-AFE8-4CEB-A5EE-535086116FF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkloadCalculator", "WorkloadCalculator\WorkloadCalculator.csproj", "{515F2BAE-AFE8-4CEB-A5EE-535086116FF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkloadCalculatorTests", "WorkloadCalculatorTests\WorkloadCalculatorTests.csproj", "{2975D0ED-14D6-4322-8761-6C10E5B7D079}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{515F2BAE-AFE8-4CEB-A5EE-535086116FF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{515F2BAE-AFE8-4CEB-A5EE-535086116FF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{515F2BAE-AFE8-4CEB-A5EE-535086116FF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2975D0ED-14D6-4322-8761-6C10E5B7D079}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2975D0ED-14D6-4322-8761-6C10E5B7D079}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2975D0ED-14D6-4322-8761-6C10E5B7D079}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2975D0ED-14D6-4322-8761-6C10E5B7D079}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
