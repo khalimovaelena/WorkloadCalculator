@@ -5,7 +5,7 @@ namespace WorkloadCalculator.Interfaces
     /// <summary>
     /// Interface to connect to the DataBase which stores Workload data
     /// </summary>
-    public interface IWorkloadDataManager
+    public interface IWorkloadDataManager : IDisposable
     {
         /// <summary>
         /// Save collection with courses to database

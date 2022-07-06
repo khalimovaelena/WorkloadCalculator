@@ -8,7 +8,7 @@ using System.Data;
 namespace WorkloadCalculator.Persistence
 {
     /// <inheritdoc />
-    public class InMemoryWorkloadDataManager : IWorkloadDataManager, IDisposable
+    public class InMemoryWorkloadDataManager : IWorkloadDataManager
     {
         /* The simpliest way is to create in-memory database.
          * For production we can use Oracle, MS SQL and even Elasticsearch and MondoDB. 

@@ -14,46 +14,47 @@ namespace WorkloadCalculator
 
         private static ILogger _logger = new ConsoleLogger<Program>();
         private static string _datePattern = @"^(([012]\d)|3[01])/((0\d)|(1[012]))/\d{4}$";
-        private static IWorkloadDataManager _dataManager;
         private static WorkloadController _controller;
 
         static void Main(string[] args)
         {
-            try
+            using (IWorkloadDataManager _dataManager = new InMemoryWorkloadDataManager(_logger))
             {
-                _dataManager = new InMemoryWorkloadDataManager(_logger);
-                _controller = new WorkloadController(_logger, _dataManager);
-                _courses = _controller.GetCourses();
-
-                _logger.LogInformation($"Hello! Now we have {_courses.Count} courses for you:");
-                _courses
-                    .Where(c => c.Name != null)
-                    .ToList()
-                    .ForEach(c => _logger.LogInformation($"NUMBER: {c.ID}, COURSE NAME: {c.Name}, HOURS: {c.Hours}"));
-
-                _logger.LogInformation("");//Empty Line
-         
-                var readValue = "";
-                while (!readValue.Equals("exit", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    _logger.LogInformation($"Please enter 'C' if you want to calculate new workload and 'H' if you want to see the history of previous calculations. To exit from the program enter 'EXIT'");
-                    readValue = Console.ReadLine();
+                    _controller = new WorkloadController(_logger, _dataManager);
+                    _courses = _controller.GetCourses();
 
-                    if (readValue.Equals("C", StringComparison.OrdinalIgnoreCase))
-                    { Calculate(); }
-                    else if (readValue.Equals("H", StringComparison.OrdinalIgnoreCase))
-                    { PrintHistory(); }
-                    else { _logger.LogWarning("Wrong input data!"); }
+                    _logger.LogInformation($"Hello! Now we have {_courses.Count} courses for you:");
+                    _courses
+                        .Where(c => c.Name != null)
+                        .ToList()
+                        .ForEach(c => _logger.LogInformation($"NUMBER: {c.ID}, COURSE NAME: {c.Name}, HOURS: {c.Hours}"));
 
-                    _logger.LogInformation("");
+                    _logger.LogInformation("");//Empty Line
+
+                    var readValue = "";
+                    while (!readValue.Equals("exit", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogInformation($"Please enter 'C' if you want to calculate new workload and 'H' if you want to see the history of previous calculations. To exit from the program enter 'EXIT'");
+                        readValue = Console.ReadLine();
+
+                        if (readValue.Equals("C", StringComparison.OrdinalIgnoreCase))
+                        { Calculate(); }
+                        else if (readValue.Equals("H", StringComparison.OrdinalIgnoreCase))
+                        { PrintHistory(); }
+                        else { _logger.LogWarning("Wrong input data!"); }
+
+                        _logger.LogInformation("");
+                    }
+
+                    _logger.LogInformation("You chose to close the program. All data will be deleted! Good bye!");
+                    Environment.Exit(0);
                 }
-
-                _logger.LogInformation("You chose to close the program. All data will be deleted! Good bye!");
-                Environment.Exit(0);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"There is an ERROR during executing Main method: {ex.Message}", ex);
+                catch (Exception ex)
+                {
+                    _logger.LogError($"There is an ERROR during executing Main method: {ex.Message}", ex);
+                }
             }
         }
 
